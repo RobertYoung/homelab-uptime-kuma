@@ -36,3 +36,28 @@
     - root
     - noxious
     - "{{ service_user }}"
+
+- name: Create cert directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ cert_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Copy TLS certificate
+  become: true
+  ansible.builtin.copy:
+    src: /etc/ssl/certs/{{ service_domain }}.crt
+    dest: "{{ cert_dir }}/{{ service_domain }}.crt"
+    remote_src: true
+    mode: "0644"
+  notify: "Restart {{ service_name }}"
+
+- name: Copy TLS private key
+  become: true
+  ansible.builtin.copy:
+    src: /etc/ssl/private/{{ service_domain }}.pem
+    dest: "{{ cert_dir }}/{{ service_domain }}.pem"
+    remote_src: true
+    mode: "0600"
+  notify: "Restart {{ service_name }}"

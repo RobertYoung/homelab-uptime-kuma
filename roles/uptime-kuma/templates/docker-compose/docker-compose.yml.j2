@@ -20,8 +20,7 @@ services:
     volumes:
       - {{ nginx_config_dir }}:/etc/nginx
       - nginx-data:/data
-      - /etc/ssl/certs/uptime-kuma.{{ domain }}.crt:/etc/ssl/certs/uptime-kuma.{{ domain }}.crt:ro
-      - /etc/ssl/private/uptime-kuma.{{ domain }}.pem:/etc/ssl/private/uptime-kuma.{{ domain }}.pem:ro
+      - {{ cert_dir }}:/etc/nginx/certs:ro
     depends_on:
       - uptime-kuma
 
