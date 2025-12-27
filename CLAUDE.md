@@ -23,8 +23,9 @@ aws-vault exec iamrobertyoung:home-assistant-production:p -- ansible-playbook pl
 # Install external dependencies (roles)
 aws-vault exec iamrobertyoung:home-assistant-production:p -- ansible-galaxy install -r requirements.yml -p .roles
 
-# Create new custom role
-aws-vault exec iamrobertyoung:home-assistant-production:p -- ansible-galaxy init roles/role_name
+# Lint
+yamllint .
+ansible-lint
 ```
 
 ## Architecture
@@ -37,32 +38,31 @@ The main playbook (`playbooks/site.yml`) applies these roles in order:
 4. `telegraf` - Metrics collection to InfluxDB
 5. `step-ca-client` - TLS certificates from Step CA
 6. `syslog` - Syslog configuration
-7. `uptime-kuma` - Uptime Kuma deployment (Docker Compose with systemd service)
+7. `wazuh-agent` - Security monitoring agent
+8. `uptime-kuma` - Uptime Kuma deployment (Docker Compose with systemd service)
 
 ### Uptime Kuma Role Structure
 The `roles/uptime-kuma` role deploys Uptime Kuma via Docker Compose:
-- `tasks/main.yml` - Main task orchestration
+- `tasks/main.yml` - Main task orchestration (setup, nginx, uptime-kuma, backup)
 - `defaults/main.yml` - Default variables
-- `templates/` - Jinja2 templates for configuration
-- `handlers/main.yml` - Service handlers
+- `templates/docker-compose/` - Docker Compose configuration
+- `templates/nginx/` - Nginx reverse proxy config
+- `handlers/main.yml` - Service restart handlers
 
-Installation directory: `/opt/uptime-kuma`
+Key directories on target host:
+- `/etc/uptime-kuma` - Configuration files and docker-compose.yml
+- `/var/lib/uptime-kuma` - Application data
+- `/etc/uptime-kuma/certs` - TLS certificates (copied from /etc/ssl, mounted as directory into nginx)
 
 ### Secrets Management
-Passwords are stored in AWS SSM (region: eu-west-2).
-Ansible retrieves them via `lookup('amazon.aws.aws_ssm', ...)`.
+Secrets are stored in AWS SSM Parameter Store (region: eu-west-2).
+Ansible retrieves them via `lookup('aws_ssm', '/path/to/secret', region='eu-west-2')`.
 
 ### External Dependencies
-Dependencies in `requirements.yml` are installed to `.roles/` (gitignored):
-- `configure-system` role from GitHub
-- `shell` role from GitHub
-- `docker` role from GitHub
-- `telegraf` role from GitHub
-- `step-ca-client` role from GitHub
-- `syslog` role from GitHub
+Dependencies in `requirements.yml` are installed to `.roles/` (gitignored). External roles use SSH git URLs requiring SSH keys.
 
 ### Available Tags
-Run specific parts with `--tags`: `configure-system`, `shell`, `docker`, `telegraf`, `step-ca-client`, `syslog`, `uptime-kuma`
+Run specific parts with `--tags`: `configure-system`, `shell`, `docker`, `telegraf`, `step-ca-client`, `syslog`, `wazuh-agent`, `uptime-kuma`
 
 ### Tool Versions (mise.toml)
 - ansible 13.1.0
