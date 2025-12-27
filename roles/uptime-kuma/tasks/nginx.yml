@@ -43,8 +43,8 @@
     group: "{{ nginx_user }}"
     mode: "0644"
   vars:
-    server: "{{ service_container_name }}"
-    port: "{{ service_port }}"
-    protocol: "http"
-    domain: "{{ service_domain }}"
+    nginx_server: "{{ service_container_name }}"
+    nginx_port: "{{ service_port }}"
+    nginx_protocol: "http"
+    nginx_domain: "{{ service_domain }}"
   notify: "Restart {{ service_name }}"

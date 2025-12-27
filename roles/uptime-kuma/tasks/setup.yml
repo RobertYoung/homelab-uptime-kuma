@@ -26,12 +26,12 @@
     owner: "{{ service_user }}"
     group: "{{ service_user }}"
 
-- name: adding '{{ service_user }}' to group docker
+- name: Add users to docker group
   become: true
-  user:
+  ansible.builtin.user:
     name: "{{ item }}"
     groups: docker
-    append: yes
+    append: true
   with_items:
     - root
     - noxious

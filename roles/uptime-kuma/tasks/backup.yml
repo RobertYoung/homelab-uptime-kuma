@@ -37,34 +37,39 @@
     mode: "0400"
   notify: "Restart {{ service_name }}"
 
-- name: Create {{ service_name }} backup systemd service file
+- name: Create backup systemd service file
   become: true
   ansible.builtin.template:
     src: "templates/backup/backup.service.j2"
     dest: /etc/systemd/system/{{ service_name }}-backup.service
     owner: root
+    group: root
+    mode: "0644"
   register: service_file_uptime_kuma_backup
 
-- name: Create {{ service_name }} backup systemd timer file
+- name: Create backup systemd timer file
   become: true
   ansible.builtin.template:
     src: "templates/backup/backup.timer.j2"
     dest: /etc/systemd/system/{{ service_name }}-backup.timer
     owner: root
+    group: root
+    mode: "0644"
   vars:
     service: "{{ service_name }}"
     cron: "*-*-* 04:00:00"
   register: timer_file_uptime_kuma_backup
 
-- name: "Reload systemd"
+- name: Reload systemd
   become: true
-  changed_when: true
   ansible.builtin.systemd:
     daemon_reload: true
   when: timer_file_uptime_kuma_backup.changed or service_file_uptime_kuma_backup.changed
-  register: systemd_reload
 
-- name: Start {{ service_name }}-backup timer
+- name: Enable and start backup timer
   become: true
-  command: "systemctl enable --now {{ service_name }}-backup.timer"
-  when: systemd_reload.changed
+  ansible.builtin.systemd:
+    name: "{{ service_name }}-backup.timer"
+    enabled: true
+    state: started
+  when: timer_file_uptime_kuma_backup.changed or service_file_uptime_kuma_backup.changed

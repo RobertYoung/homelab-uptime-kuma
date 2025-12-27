@@ -20,8 +20,3 @@
     name: "{{ service_name }}"
     enabled: true
     state: started
-
-# - name: "Restart telegraf"
-#   become: true
-#   ignore_errors: True
-#   shell: "systemctl stop telegraf; systemctl daemon-reload; systemctl enable --now telegraf"
