@@ -1,0 +1,40 @@
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:2.0.2-slim-rootless
+    container_name: uptime-kuma
+    volumes:
+      - uptime-kuma-data:/app/data
+      - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt
+    environment:
+      NODE_EXTRA_CA_CERTS: /etc/ssl/certs/ca-certificates.crt
+    ports:
+      - {{ service_port }}:3001
+    restart: unless-stopped
+
+  nginx:
+    container_name: nginx
+    image: nginx:1.27-bookworm
+    restart: always
+    ports:
+      - '443:443'
+    volumes:
+      - {{ nginx_config_dir }}:/etc/nginx
+      - nginx-data:/data
+      - /etc/ssl/certs/uptime-kuma.{{ domain }}.crt:/etc/ssl/certs/uptime-kuma.{{ domain }}.crt:ro
+      - /etc/ssl/private/uptime-kuma.{{ domain }}.pem:/etc/ssl/private/uptime-kuma.{{ domain }}.pem:ro
+    depends_on:
+      - uptime-kuma
+
+  backup-toolkit:
+    container_name: backup-toolkit
+    image: backup-toolkit:local
+    command: sleep infinity 
+    restart: unless-stopped
+    volumes:
+      - uptime-kuma-data:{{ backup_from }}
+    env_file:
+      - ./backup-toolkit.env
+
+volumes:
+  uptime-kuma-data:
+  nginx-data:

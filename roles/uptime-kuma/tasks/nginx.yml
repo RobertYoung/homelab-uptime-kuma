@@ -1,0 +1,50 @@
+---
+- name: Create user {{ nginx_user }}
+  become: true
+  ansible.builtin.user:
+    name: "{{ nginx_user }}"
+    create_home: false
+    comment: "{{ nginx_user }} user with no shell access"
+    shell: /bin/false
+
+- name: Create data directory for nginx
+  become: true
+  ansible.builtin.file:
+    path: "{{ nginx_data_dir }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+
+- name: Create config directory {{ nginx_config_dir }}
+  become: true
+  ansible.builtin.file:
+    path: "{{ nginx_config_dir }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+
+- name: Create log directory for nginx
+  become: true
+  ansible.builtin.file:
+    path: "{{ nginx_data_dir }}/log"
+    state: directory
+    mode: "0755"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+
+- name: Create nginx config
+  become: true
+  ansible.builtin.template:
+    src: "templates/nginx/nginx.conf.j2"
+    dest: "{{ nginx_config_dir }}/nginx.conf"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    mode: "0644"
+  vars:
+    server: "{{ service_container_name }}"
+    port: "{{ service_port }}"
+    protocol: "http"
+    domain: "{{ service_domain }}"
+  notify: "Restart {{ service_name }}"

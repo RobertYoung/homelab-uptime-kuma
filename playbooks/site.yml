@@ -34,21 +34,29 @@
         telegraf_influxdb_url: "https://influxdb.{{ domain }}"
         telegraf_influxdb_port: 8086
         telegraf_influxdb_organisation: "0dd8df669872ba9e"
-        telegraf_influxdb_token: "{{ lookup('amazon.aws.aws_ssm', '/home-server/influxdb-token') }}"
+        telegraf_influxdb_token: "{{ lookup('aws_ssm', '/home-server/influxdb-token', region='eu-west-2') }}"
         telegraf_influxdb_bucket: "home-server"
 
     - role: step-ca-client
       tags: [step-ca-client]
       vars:
-        step_ca_client_provisioner_password: "{{ lookup('amazon.aws.aws_ssm', '/home-server/step-ca-ansible-password') }}"
-        step_ca_client_cert_name: "{{ fqdn }}"
-        step_ca_client_cert_file: "/etc/ssl/certs/{{ fqdn }}.crt"
-        step_ca_client_key_file: "/etc/ssl/private/{{ fqdn }}.pem"
+        step_ca_client_provisioner_password: "{{ lookup('aws_ssm', '/home-server/step-ca-ansible-password', region='eu-west-2') }}"
+        step_ca_client_post_renew_commands:
+          - "docker kill -s HUP nginx"
+        step_ca_client_cert_not_after: "168h" # 7 days
 
     - role: syslog
       tags: [syslog]
       vars:
         syslog_fqdn: "{{ fqdn }}"
 
+    - role: wazuh-agent
+      tags: [wazuh-agent]
+
     - role: uptime-kuma
       tags: [uptime-kuma]
+      vars:
+        backup_aws_access_key: "{{ lookup('aws_ssm', '/home-server/access-key', region='eu-west-2') }}"
+        backup_aws_secret_access_key: "{{ lookup('aws_ssm', '/home-server/secret-access-key', region='eu-west-2') }}"
+        backup_aws_region: eu-west-2
+        backup_mosquitto_password: "{{ lookup('aws_ssm', '/home-server/mosquitto-home-assistant-password', region='eu-west-2') }}"

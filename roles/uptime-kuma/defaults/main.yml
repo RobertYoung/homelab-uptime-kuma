@@ -1,0 +1,21 @@
+---
+service_name: uptime-kuma
+service_port: "3001"
+service_data_dir: /var/lib/uptime-kuma
+service_config_dir: /etc/uptime-kuma
+service_user: uptime-kuma
+service_domain: uptime-kuma.local.iamrobertyoung.co.uk
+service_container_name: uptime-kuma
+
+backup_image_name: backup-toolkit
+backup_image_tag: local
+backup_from: /data
+backup_mosquitto_host: mosquitto.local.iamrobertyoung.co.uk
+backup_mosquitto_username: "home-assistant"
+backup_mosquitto_password: "password"
+backup_bucket_name: "home-server-backup.iamrobertyoung.co.uk"
+
+nginx_config_dir: /etc/nginx
+nginx_data_dir: /var/lib/nginx
+nginx_user: nginx
+nginx_service_name: nginx
