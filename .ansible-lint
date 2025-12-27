@@ -1,4 +1,6 @@
 ---
+offline: true  # Don't install dependencies (requires SSH keys for private repos)
+
 skip_list:
   - role-name  # Allow hyphens in role names (uptime-kuma)
 
