@@ -1,0 +1,9 @@
+---
+skip_list:
+  - role-name  # Allow hyphens in role names (uptime-kuma)
+
+exclude_paths:
+  - .roles/
+  - .ansible/
+  - .git/
+  - .github/

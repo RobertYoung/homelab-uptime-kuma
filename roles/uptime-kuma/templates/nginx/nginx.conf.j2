@@ -65,14 +65,14 @@ http {
   }
 
   server {
-    set $forward_scheme "{{ protocol }}";
-    set $server         "{{ server }}";
-    set $port           {{ port }};
+    set $forward_scheme "{{ nginx_protocol }}";
+    set $server         "{{ nginx_server }}";
+    set $port           {{ nginx_port }};
 
     listen 443 ssl;
     listen [::]:443 ssl;
     http2 on;
-    server_name {{ domain }};
+    server_name {{ nginx_domain }};
 
     # logging
     # access_log /data/log/access.log proxy;
@@ -84,8 +84,8 @@ http {
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384';
     ssl_prefer_server_ciphers off;
-    ssl_certificate /etc/ssl/certs/{{ domain }}.crt;
-    ssl_certificate_key /etc/ssl/private/{{ domain }}.pem;
+    ssl_certificate /etc/ssl/certs/{{ nginx_domain }}.crt;
+    ssl_certificate_key /etc/ssl/private/{{ nginx_domain }}.pem;
 
     location / {
       proxy_ssl_verify              off;

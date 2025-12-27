@@ -1,6 +1,7 @@
+---
 name: Lint
 
-on:
+"on":
   push:
     branches: [main]
   pull_request:
@@ -33,5 +34,5 @@ jobs:
       - name: Run yamllint
         run: yamllint .
 
-      # - name: Run ansible-lint
-      #   run: ansible-lint
+      - name: Run ansible-lint
+        run: ansible-lint

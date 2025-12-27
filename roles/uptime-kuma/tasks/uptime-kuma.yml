@@ -1,3 +1,4 @@
+---
 - name: Create docker compose config
   become: true
   ansible.builtin.template:
