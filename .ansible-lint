@@ -9,3 +9,4 @@ exclude_paths:
   - .ansible/
   - .git/
   - .github/
+  - playbooks/  # Exclude playbooks referencing external roles (not available in CI)
