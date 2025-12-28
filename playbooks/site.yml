@@ -42,10 +42,9 @@
       vars:
         step_ca_client_provisioner_password: "{{ lookup('aws_ssm', '/home-server/step-ca-ansible-password', region='eu-west-2') }}"
         step_ca_client_post_renew_commands:
-          - "cp /etc/ssl/certs/uptime-kuma.local.iamrobertyoung.co.uk.crt /etc/uptime-kuma/certs/"
-          - "cp /etc/ssl/private/uptime-kuma.local.iamrobertyoung.co.uk.pem /etc/uptime-kuma/certs/"
+          - "cp /etc/ssl/certs/{{ fqdn }}.crt /etc/uptime-kuma/certs/"
+          - "cp /etc/ssl/private/{{ fqdn }}.pem /etc/uptime-kuma/certs/"
           - "docker kill -s HUP nginx"
-        step_ca_client_cert_not_after: "168h"  # 7 days
 
     - role: syslog
       tags: [syslog]
