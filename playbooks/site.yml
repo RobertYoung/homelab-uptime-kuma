@@ -44,7 +44,7 @@
         step_ca_client_post_renew_commands:
           - "cp /etc/ssl/certs/{{ fqdn }}.crt /etc/uptime-kuma/certs/"
           - "cp /etc/ssl/private/{{ fqdn }}.pem /etc/uptime-kuma/certs/"
-          - "docker kill -s HUP nginx"
+          - "docker kill -s HUP nginx || echo 'Nginx not running, skipping HUP signal'"
 
     - role: syslog
       tags: [syslog]
