@@ -7,22 +7,18 @@ services:
       - /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt
     environment:
       NODE_EXTRA_CA_CERTS: /etc/ssl/certs/ca-certificates.crt
-    ports:
-      - {{ service_port }}:3001
     restart: unless-stopped
 
-  nginx:
-    container_name: nginx
-    image: nginx:1.27-bookworm
-    restart: always
+  traefik:
+    image: traefik:v3.6
+    container_name: traefik
     ports:
-      - '443:443'
+      - "{{ service_port }}:443"
     volumes:
-      - {{ nginx_config_dir }}:/etc/nginx
-      - nginx-data:/data
-      - {{ cert_dir }}:/etc/nginx/certs:ro
-    depends_on:
-      - uptime-kuma
+      - {{ traefik_config_dir }}/traefik.yml:/etc/traefik/traefik.yml:ro
+      - {{ traefik_config_dir }}/dynamic:/etc/traefik/dynamic:ro
+      - {{ cert_dir }}:/certs:ro
+    restart: unless-stopped
 
   backup-toolkit:
     container_name: backup-toolkit
@@ -36,4 +32,3 @@ services:
 
 volumes:
   uptime-kuma-data:
-  nginx-data:
