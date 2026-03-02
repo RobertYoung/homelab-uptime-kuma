@@ -42,9 +42,10 @@
       vars:
         step_ca_client_provisioner_password: "{{ lookup('aws_ssm', '/home-server/step-ca-ansible-password', region='eu-west-2') }}"
         step_ca_client_post_renew_commands:
+          - "mkdir -p /etc/uptime-kuma/certs"
           - "cp /etc/ssl/certs/{{ fqdn }}.crt /etc/uptime-kuma/certs/"
           - "cp /etc/ssl/private/{{ fqdn }}.pem /etc/uptime-kuma/certs/"
-          - "docker kill -s HUP nginx || echo 'Nginx not running, skipping HUP signal'"
+          - "docker kill --signal=HUP traefik || echo 'Traefik not running, skipping HUP signal'"
 
     - role: syslog
       tags: [syslog]

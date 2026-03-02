@@ -8,12 +8,12 @@
   tags:
     - always
 
-- name: Setup nginx
+- name: Setup traefik
   ansible.builtin.include_tasks:
-    file: nginx.yml
+    file: traefik.yml
     apply:
       tags:
-        - nginx
+        - traefik
   tags:
     - always
 
