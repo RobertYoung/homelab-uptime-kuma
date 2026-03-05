@@ -43,16 +43,17 @@ The main playbook (`playbooks/site.yml`) applies these roles in order:
 
 ### Uptime Kuma Role Structure
 The `roles/uptime-kuma` role deploys Uptime Kuma via Docker Compose:
-- `tasks/main.yml` - Main task orchestration (setup, nginx, uptime-kuma, backup)
+- `tasks/main.yml` - Main task orchestration (setup, traefik, uptime-kuma, backup)
 - `defaults/main.yml` - Default variables
 - `templates/docker-compose/` - Docker Compose configuration
-- `templates/nginx/` - Nginx reverse proxy config
+- `templates/traefik/` - Traefik reverse proxy config (static + dynamic)
 - `handlers/main.yml` - Service restart handlers
 
 Key directories on target host:
 - `/etc/uptime-kuma` - Configuration files and docker-compose.yml
 - `/var/lib/uptime-kuma` - Application data
-- `/etc/uptime-kuma/certs` - TLS certificates (copied from /etc/ssl, mounted as directory into nginx)
+- `/etc/uptime-kuma/certs` - TLS certificates (copied from /etc/ssl, mounted into Traefik)
+- `/etc/traefik` - Traefik configuration
 
 ### Secrets Management
 Secrets are stored in AWS SSM Parameter Store (region: eu-west-2).
