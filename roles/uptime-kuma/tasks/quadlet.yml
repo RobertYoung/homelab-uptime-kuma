@@ -1,5 +1,5 @@
 ---
-- name: Get {{ service_user }} user info
+- name: Get service user info for {{ service_user }}
   ansible.builtin.getent:
     database: passwd
     key: "{{ service_user }}"
@@ -32,29 +32,35 @@
     mode: "0644"
   notify: Reload systemd
 
-- name: Deploy Quadlet container files
+- name: Deploy uptime-kuma container quadlet
   become: true
   ansible.builtin.template:
-    src: "templates/quadlet/{{ item }}.container.j2"
-    dest: "{{ quadlet_dir }}/{{ item }}.container"
+    src: "templates/quadlet/uptime-kuma.container.j2"
+    dest: "{{ quadlet_dir }}/uptime-kuma.container"
     mode: "0644"
-  loop:
-    - uptime-kuma
-    - traefik
-    - backup-toolkit
-  register: quadlet_files
-  notify: Reload systemd
+  notify:
+    - Reload systemd
+    - Restart uptime-kuma
 
-- name: Restart changed services
+- name: Deploy traefik container quadlet
   become: true
-  ansible.builtin.systemd:
-    name: "{{ item.item }}"
-    state: restarted
-    daemon_reload: true
-  loop: "{{ quadlet_files.results }}"
-  when: item.changed
-  loop_control:
-    label: "{{ item.item }}"
+  ansible.builtin.template:
+    src: "templates/quadlet/traefik.container.j2"
+    dest: "{{ quadlet_dir }}/traefik.container"
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart traefik
+
+- name: Deploy backup-toolkit container quadlet
+  become: true
+  ansible.builtin.template:
+    src: "templates/quadlet/backup-toolkit.container.j2"
+    dest: "{{ quadlet_dir }}/backup-toolkit.container"
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart backup-toolkit
 
 - name: Reload systemd daemon
   become: true

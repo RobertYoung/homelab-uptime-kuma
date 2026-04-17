@@ -25,14 +25,7 @@
     state: present
     build:
       extra_args: "--network=host"
-  register: backup_image_build
-
-- name: Restart backup-toolkit container if image changed
-  become: true
-  ansible.builtin.systemd:
-    name: backup-toolkit.service
-    state: restarted
-  when: backup_image_build.changed
+  notify: "Restart backup-toolkit"
 
 - name: Create backup .env file
   become: true
