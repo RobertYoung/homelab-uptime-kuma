@@ -1,0 +1,16 @@
+[Unit]
+Description=Backup toolkit for uptime-kuma
+
+[Container]
+Image=backup-toolkit:local
+ContainerName=backup-toolkit
+Exec=sleep infinity
+Volume=uptime-kuma-data.volume:{{ backup_from }}
+EnvironmentFile={{ service_config_dir }}/backup-toolkit.env
+Network=uptime-kuma.network
+
+[Service]
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target default.target

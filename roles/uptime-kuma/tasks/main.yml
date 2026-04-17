@@ -17,12 +17,12 @@
   tags:
     - always
 
-- name: Setup uptime-kuma
+- name: Deploy quadlets
   ansible.builtin.include_tasks:
-    file: uptime-kuma.yml
+    file: quadlet.yml
     apply:
       tags:
-        - uptime-kuma
+        - quadlet
   tags:
     - always
 

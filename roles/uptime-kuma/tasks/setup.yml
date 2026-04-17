@@ -26,17 +26,6 @@
     owner: "{{ service_user }}"
     group: "{{ service_user }}"
 
-- name: Add users to docker group
-  become: true
-  ansible.builtin.user:
-    name: "{{ item }}"
-    groups: docker
-    append: true
-  with_items:
-    - root
-    - noxious
-    - "{{ service_user }}"
-
 - name: Create cert directory
   become: true
   ansible.builtin.file:
