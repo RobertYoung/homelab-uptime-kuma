@@ -1,7 +1,7 @@
 ---
 - name: Copy dockerfile
   ansible.builtin.copy:
-    src: files/dockerfile
+    src: files/Dockerfile
     dest: /tmp/Dockerfile
     mode: "0644"
   register: dockerfile_copy
@@ -11,60 +11,67 @@
   ansible.builtin.copy:
     src: "files/backup.sh"
     dest: "/tmp/backup.sh"
-    mode: "0644"
+    mode: "0755"
   register: backup_script_copy
 
-- name: Build Docker image
+- name: Build Podman image
   become: true
-  community.docker.docker_image:
+  containers.podman.podman_image:
     name: "{{ backup_image_name }}"
     tag: "{{ backup_image_tag }}"
-    source: build
+    path: /tmp
     push: false
-    build:
-      path: /tmp
-    force_source: "{{ dockerfile_copy.changed or backup_script_copy.changed }}"
+    force: "{{ dockerfile_copy.changed or backup_script_copy.changed }}"
     state: present
-  notify: "Restart {{ service_name }}"
+    build:
+      extra_args: "--network=host"
+  register: backup_image_build
+
+- name: Restart backup-toolkit container if image changed
+  become: true
+  ansible.builtin.systemd:
+    name: backup-toolkit.service
+    state: restarted
+  when: backup_image_build.changed
 
 - name: Create backup .env file
   become: true
   ansible.builtin.template:
-    src: templates/docker-compose/backup-toolkit.env.j2
+    src: templates/env/backup-toolkit.env.j2
     dest: "{{ service_config_dir }}/backup-toolkit.env"
     group: "{{ service_user }}"
     owner: "{{ service_user }}"
     mode: "0400"
-  notify: "Restart {{ service_name }}"
+  notify: "Restart backup-toolkit"
 
 - name: Create backup systemd service file
   become: true
   ansible.builtin.template:
     src: "templates/backup/backup.service.j2"
-    dest: /etc/systemd/system/{{ service_name }}-backup.service
+    dest: "/etc/systemd/system/{{ service_name }}-backup.service"
     owner: root
     group: root
     mode: "0644"
-  register: service_file_uptime_kuma_backup
+  register: backup_service_file
 
 - name: Create backup systemd timer file
   become: true
   ansible.builtin.template:
     src: "templates/backup/backup.timer.j2"
-    dest: /etc/systemd/system/{{ service_name }}-backup.timer
+    dest: "/etc/systemd/system/{{ service_name }}-backup.timer"
     owner: root
     group: root
     mode: "0644"
   vars:
     service: "{{ service_name }}"
-    cron: "*-*-* 04:00:00"
-  register: timer_file_uptime_kuma_backup
+    cron: "{{ backup_cron }}"
+  register: backup_timer_file
 
 - name: Reload systemd
   become: true
   ansible.builtin.systemd:
     daemon_reload: true
-  when: timer_file_uptime_kuma_backup.changed or service_file_uptime_kuma_backup.changed
+  when: backup_service_file.changed or backup_timer_file.changed
 
 - name: Enable and start backup timer
   become: true
@@ -72,4 +79,10 @@
     name: "{{ service_name }}-backup.timer"
     enabled: true
     state: started
-  when: timer_file_uptime_kuma_backup.changed or service_file_uptime_kuma_backup.changed
+
+- name: Enable and start backup-toolkit service
+  become: true
+  ansible.builtin.systemd:
+    name: backup-toolkit.service
+    enabled: true
+    state: started

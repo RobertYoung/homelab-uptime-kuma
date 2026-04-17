@@ -17,4 +17,8 @@ backup_bucket_name: "home-server-backup.iamrobertyoung.co.uk"
 
 traefik_config_dir: /etc/traefik
 
+quadlet_dir: /etc/containers/systemd
+
+backup_cron: "*-*-* 04:00:00"
+
 cert_dir: /etc/uptime-kuma/certs

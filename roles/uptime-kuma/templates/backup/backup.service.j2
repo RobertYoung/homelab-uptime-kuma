@@ -4,7 +4,4 @@ OnFailure=mail-systemd-failure@%n.service
 
 [Service]
 Type=oneshot
-WorkingDirectory={{ service_config_dir }}
-ExecStartPre=/usr/bin/docker compose up -d backup-toolkit
-ExecStart=/usr/bin/docker exec backup-toolkit /bin/bash -c "./backup.sh"
-
+ExecStart=/usr/bin/podman exec backup-toolkit /bin/bash -c "./backup.sh"

@@ -25,7 +25,7 @@
     owner: root
     group: root
     mode: "0644"
-  notify: "Restart {{ service_name }}"
+  notify: "Restart traefik"
 
 - name: Create traefik dynamic TLS config
   become: true
@@ -35,7 +35,7 @@
     owner: root
     group: root
     mode: "0644"
-  notify: "Restart {{ service_name }}"
+  notify: "Restart traefik"
 
 - name: Create traefik dynamic services config
   become: true
@@ -45,4 +45,4 @@
     owner: root
     group: root
     mode: "0644"
-  notify: "Restart {{ service_name }}"
+  notify: "Restart traefik"

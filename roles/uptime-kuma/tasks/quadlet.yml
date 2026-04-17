@@ -1,0 +1,72 @@
+---
+- name: Get {{ service_user }} user info
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ service_user }}"
+
+- name: Set service UID/GID facts
+  ansible.builtin.set_fact:
+    service_uid: "{{ getent_passwd[service_user][1] }}"
+    service_gid: "{{ getent_passwd[service_user][2] }}"
+
+- name: Create Quadlet directory
+  become: true
+  ansible.builtin.file:
+    path: "{{ quadlet_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Deploy Quadlet network
+  become: true
+  ansible.builtin.template:
+    src: "templates/quadlet/uptime-kuma.network.j2"
+    dest: "{{ quadlet_dir }}/uptime-kuma.network"
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Deploy Quadlet volume
+  become: true
+  ansible.builtin.template:
+    src: "templates/quadlet/uptime-kuma-data.volume.j2"
+    dest: "{{ quadlet_dir }}/uptime-kuma-data.volume"
+    mode: "0644"
+  notify: Reload systemd
+
+- name: Deploy Quadlet container files
+  become: true
+  ansible.builtin.template:
+    src: "templates/quadlet/{{ item }}.container.j2"
+    dest: "{{ quadlet_dir }}/{{ item }}.container"
+    mode: "0644"
+  loop:
+    - uptime-kuma
+    - traefik
+    - backup-toolkit
+  register: quadlet_files
+  notify: Reload systemd
+
+- name: Restart changed services
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ item.item }}"
+    state: restarted
+    daemon_reload: true
+  loop: "{{ quadlet_files.results }}"
+  when: item.changed
+  loop_control:
+    label: "{{ item.item }}"
+
+- name: Reload systemd daemon
+  become: true
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Enable and start services
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - uptime-kuma
+    - traefik

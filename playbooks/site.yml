@@ -25,8 +25,8 @@
         shell_home_directory: /root
         shell_show_pretty_info: false
 
-    - role: docker
-      tags: [docker]
+    - role: podman
+      tags: [podman]
 
     - role: telegraf
       tags: [telegraf]
@@ -45,7 +45,7 @@
           - "mkdir -p /etc/uptime-kuma/certs"
           - "cp /etc/ssl/certs/{{ fqdn }}.crt /etc/uptime-kuma/certs/"
           - "cp /etc/ssl/private/{{ fqdn }}.pem /etc/uptime-kuma/certs/"
-          - "docker kill --signal=HUP traefik || echo 'Traefik not running, skipping HUP signal'"
+          - "podman kill --signal=HUP traefik || echo 'Traefik not running, skipping HUP signal'"
 
     - role: syslog
       tags: [syslog]
